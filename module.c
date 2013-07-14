@@ -36,7 +36,7 @@ print_to_client(const char* const msg) {
   if (!msg || strlen(msg) == 0) {
     return;
   }
-  printtext(NULL, NULL, MSGLEVEL_CRAP, "sslinfo: %s", msg);
+  printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "sslinfo: %s", msg);
 }
 
 //! callback for a server connected event.
@@ -51,17 +51,26 @@ void
 server_connected(SERVER_REC* server) {
   // sanity check that we have the required structs.
   if (!server) {
+    print_to_client("server not set");
     return;
   }
   if (!server->connrec) {
+    print_to_client("connection record not set");
     return;
   }
   if (!server->handle) {
+    print_to_client("server handle not set");
+    return;
+  }
+  if (!server->tag) {
+    print_to_client("server tag not set");
     return;
   }
 
   // we only do anything here if we have an ssl connection.
   if (!server->connrec->use_ssl) {
+    printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Connected to server [%s]"
+      " without SSL/TLS.", server->tag);
     return;
   }
 
@@ -69,10 +78,15 @@ server_connected(SERVER_REC* server) {
   // but actually is a GIOSSLChannel (see network-openssl.c).
   GIOSSLChannel *ssl_channel = 
     (GIOSSLChannel*) server->handle->handle;
+  if (!ssl_channel->ssl) {
+    print_to_client("ssl struct not found");
+    return;
+  }
 
   // get the ssl cipher name.
   const SSL_CIPHER* ssl_cipher = SSL_get_current_cipher(ssl_channel->ssl);
   if (!ssl_cipher) {
+    print_to_client("failed to find ssl cipher");
     return;
   }
 
@@ -84,11 +98,11 @@ server_connected(SERVER_REC* server) {
   //   cipher description: DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA      Enc=AESGCM(256) Mac=AEAD
   // for more information, refer to
   // http://www.openssl.org/docs/ssl/ssl.html
-  const char *cipher_name = SSL_CIPHER_get_name(ssl_cipher);
+  const char* const cipher_name = SSL_CIPHER_get_name(ssl_cipher);
   int cipher_bits = SSL_CIPHER_get_bits(ssl_cipher, NULL);
-  char *protocol_version = SSL_CIPHER_get_version(ssl_cipher);
-  printtext(NULL, NULL, MSGLEVEL_CRAP, "Connected to server [%s] using"
-    " cipher [%s] (%d bits) (SSL/TLS protocol version %s)",
+  char* protocol_version = SSL_CIPHER_get_version(ssl_cipher);
+  printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Connected to server [%s] using"
+    " cipher [%s] (%d bits) (SSL/TLS protocol version %s).",
     server->tag, cipher_name, cipher_bits, protocol_version);
 }
 
@@ -98,7 +112,7 @@ server_connected(SERVER_REC* server) {
  */
 void
 init_signals(void) {
-  signal_add_last("server connected", (SIGNAL_FUNC) server_connected);
+  signal_add("server connected", (SIGNAL_FUNC) server_connected);
 }
 
 //! clean up signals we are listening for.
@@ -107,7 +121,7 @@ init_signals(void) {
  */
 void
 deinit_signals(void) {
-  signal_remove("server connected", (SIGNAL_FUNC) server_connected);
+  signals_remove_module(MODULE_NAME);
 }
 
 //! set up the module.

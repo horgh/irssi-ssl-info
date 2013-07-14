@@ -38,19 +38,19 @@ CFLAGS = \
 	-Wwrite-strings -Waggregate-return \
 	-Wswitch-enum -Wconversion -Wunreachable-code
 
-DFLAGS=-DHAVE_CONFIG_H
 LINKS=-L$(LIB_DIR)
 INCLUDES=-I. $(IRSSI_INCLUDES) $(GLIB2_INCLUDES)
 
 OBJS=module.o
+TARGETS=libsslinfo.so
 
-all: libsslinfo.so
+all: $(TARGETS)
 
 libsslinfo.so: $(OBJS)
-	$(CC) $(LINKS) $(INCLUDES) $(CFLAGS) $(OBJS) -o $@ $(DFLAGS)
+	$(CC) $(LINKS) $(INCLUDES) $(CFLAGS) $(OBJS) -o $@
 
-%.o: %.c %.h
-	$(CC) $(INCLUDES) $(CFLAGS) -c $(DFLAGS) -o $@ $< $(DEBUG)
+module.o: module.c module.h Makefile irssi_includes.h
+	$(CC) $(INCLUDES) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf libssl.info.so $(OBJS)
+	rm -rf $(TARGETS) $(OBJS)
