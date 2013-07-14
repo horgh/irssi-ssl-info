@@ -2,16 +2,16 @@
 #define __MODULE_H
 
 void
-print_to_client(const char* const);
+sslinfo_print_to_client(const char* const);
 
 void
-server_connected(SERVER_REC*);
+sslinfo_server_connected(SERVER_REC*);
 
 void
-init_signals(void);
+sslinfo_init_signals(void);
 
 void
-deinit_signals(void);
+sslinfo_deinit_signals(void);
 
 void
 sslinfo_init(void);

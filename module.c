@@ -30,7 +30,7 @@ typedef struct
  * @return void
  */
 void
-print_to_client(const char* const msg) {
+sslinfo_print_to_client(const char* const msg) {
   if (!msg || strlen(msg) == 0) {
     return;
   }
@@ -46,22 +46,22 @@ print_to_client(const char* const msg) {
  * we retrieve cipher information and show it to the client.
  */
 void
-server_connected(SERVER_REC* server) {
+sslinfo_server_connected(SERVER_REC* server) {
   // sanity check that we have the required structs.
   if (!server) {
-    print_to_client("server not set");
+    sslinfo_print_to_client("server not set");
     return;
   }
   if (!server->connrec) {
-    print_to_client("connection record not set");
+    sslinfo_print_to_client("connection record not set");
     return;
   }
   if (!server->handle) {
-    print_to_client("server handle not set");
+    sslinfo_print_to_client("server handle not set");
     return;
   }
   if (!server->tag) {
-    print_to_client("server tag not set");
+    sslinfo_print_to_client("server tag not set");
     return;
   }
 
@@ -77,14 +77,14 @@ server_connected(SERVER_REC* server) {
   GIOSSLChannel *ssl_channel = 
     (GIOSSLChannel*) server->handle->handle;
   if (!ssl_channel->ssl) {
-    print_to_client("ssl struct not found");
+    sslinfo_print_to_client("ssl struct not found");
     return;
   }
 
   // get the ssl cipher name.
   const SSL_CIPHER* ssl_cipher = SSL_get_current_cipher(ssl_channel->ssl);
   if (!ssl_cipher) {
-    print_to_client("failed to find ssl cipher");
+    sslinfo_print_to_client("failed to find ssl cipher");
     return;
   }
 
@@ -109,8 +109,9 @@ server_connected(SERVER_REC* server) {
  * @return void
  */
 void
-init_signals(void) {
-  signal_add("server connected", server_connected);
+sslinfo_init_signals(void) {
+  signal_add("server connected", sslinfo_server_connected);
+  sslinfo_print_to_client("sslinfo signals added");
 }
 
 //! clean up signals we are listening for.
@@ -118,9 +119,10 @@ init_signals(void) {
  * @return void
  */
 void
-deinit_signals(void) {
+sslinfo_deinit_signals(void) {
   // clear signals for the whole module.
   signals_remove_module(MODULE_NAME);
+  sslinfo_print_to_client("sslinfo signals cleared");
 }
 
 //! set up the module.
@@ -129,9 +131,9 @@ deinit_signals(void) {
  */
 void
 sslinfo_init(void) {
+  sslinfo_init_signals();
+  sslinfo_print_to_client("sslinfo loaded");
   module_register(MODULE_NAME, "core");
-  init_signals();
-  print_to_client("sslinfo loaded");
 }
 
 //! clean up the module.
@@ -140,5 +142,6 @@ sslinfo_init(void) {
  */
 void
 sslinfo_deinit(void) {
-  deinit_signals();
+  sslinfo_deinit_signals();
+  sslinfo_print_to_client("sslinfo unloaded");
 }
