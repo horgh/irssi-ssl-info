@@ -1,7 +1,5 @@
 /*
  * irssi module.
- *
- * this sets up the module.
  */
 
 #include <openssl/ssl.h>
@@ -112,7 +110,7 @@ server_connected(SERVER_REC* server) {
  */
 void
 init_signals(void) {
-  signal_add("server connected", (SIGNAL_FUNC) server_connected);
+  signal_add("server connected", server_connected);
 }
 
 //! clean up signals we are listening for.
@@ -121,6 +119,7 @@ init_signals(void) {
  */
 void
 deinit_signals(void) {
+  // clear signals for the whole module.
   signals_remove_module(MODULE_NAME);
 }
 
@@ -132,6 +131,7 @@ void
 sslinfo_init(void) {
   module_register(MODULE_NAME, "core");
   init_signals();
+  print_to_client("sslinfo loaded");
 }
 
 //! clean up the module.

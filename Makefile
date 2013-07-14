@@ -13,7 +13,7 @@ GLIB2_INCLUDES= \
 
 CC=gcc
 
-# -Wpadded generates from includes!
+# NOTE: -Wpadded generates warnings from includes!
 CFLAGS = \
 	-shared \
 	-std=c11 -O1 -g -ggdb -pedantic -pedantic-errors \
@@ -38,7 +38,6 @@ CFLAGS = \
 	-Wwrite-strings -Waggregate-return \
 	-Wswitch-enum -Wconversion -Wunreachable-code
 
-LINKS=-L$(LIB_DIR)
 INCLUDES=-I. $(IRSSI_INCLUDES) $(GLIB2_INCLUDES)
 
 OBJS=module.o
@@ -47,10 +46,10 @@ TARGETS=libsslinfo.so
 all: $(TARGETS)
 
 libsslinfo.so: $(OBJS)
-	$(CC) $(LINKS) $(INCLUDES) $(CFLAGS) $(OBJS) -o $@
+	$(CC) $(INCLUDES) $(CFLAGS) $(OBJS) -o $@
 
 module.o: module.c module.h Makefile irssi_includes.h
-	$(CC) $(INCLUDES) $(CFLAGS) -c -o $@ $<
+	$(CC) $(INCLUDES) $(CFLAGS) -fPIC -c -o $@ $<
 
 clean:
 	rm -rf $(TARGETS) $(OBJS)
