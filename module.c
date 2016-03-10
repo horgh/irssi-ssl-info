@@ -145,3 +145,13 @@ sslinfo_deinit(void) {
   sslinfo_deinit_signals();
   sslinfo_print_to_client("sslinfo unloaded");
 }
+
+#ifdef IRSSI_ABI_VERSION
+/*
+ * Irssi abi check
+ */
+void
+sslinfo_abicheck(int * version) {
+	*version = IRSSI_ABI_VERSION;
+}
+#endif

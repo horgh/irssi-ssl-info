@@ -19,4 +19,9 @@ sslinfo_init(void);
 void
 sslinfo_deinit(void);
 
+#ifdef IRSSI_ABI_VERSION
+void
+sslinfo_abicheck(int *);
+#endif
+
 #endif
