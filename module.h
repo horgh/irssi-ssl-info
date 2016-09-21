@@ -1,11 +1,13 @@
 #ifndef __MODULE_H
 #define __MODULE_H
 
-void
-sslinfo_print_to_client(const char* const);
+#include "irssi_includes.h"
 
 void
-sslinfo_server_connected(SERVER_REC*);
+sslinfo_print_to_client(const char * const);
+
+void
+sslinfo_server_connected(const SERVER_REC * const);
 
 void
 sslinfo_init_signals(void);

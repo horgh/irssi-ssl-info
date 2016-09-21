@@ -7,20 +7,19 @@
 
 #include <string.h>
 
-#include "irssi_includes.h"
 #include "module.h"
 
 // XXX: this is defined in irssi's network-openssl.c ...
 typedef struct
 {
-	GIOChannel pad;
-	gint fd;
-	GIOChannel *giochan;
-	SSL *ssl;
-	SSL_CTX *ctx;
-	unsigned int verify:1;
-	SERVER_REC *server;
-	int port;
+  GIOChannel pad;
+  gint fd;
+  GIOChannel *giochan;
+  SSL *ssl;
+  SSL_CTX *ctx;
+  unsigned int verify:1;
+  SERVER_REC *server;
+  int port;
 } GIOSSLChannel;
 
 //! print a message to the client.
@@ -46,7 +45,7 @@ sslinfo_print_to_client(const char* const msg) {
  * we retrieve cipher information and show it to the client.
  */
 void
-sslinfo_server_connected(SERVER_REC* server) {
+sslinfo_server_connected(const SERVER_REC * const server) {
   // sanity check that we have the required structs.
   if (!server) {
     sslinfo_print_to_client("server not set");
@@ -65,7 +64,7 @@ sslinfo_server_connected(SERVER_REC* server) {
     return;
   }
 
-  // we only do anything here if we have an ssl connection.
+  // If we're not connected using TLS then say that. And that's all.
   if (!server->connrec->use_ssl) {
     printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Connected to server [%s]"
       " without SSL/TLS.", server->tag);
@@ -74,31 +73,34 @@ sslinfo_server_connected(SERVER_REC* server) {
 
   // connrec has a member connect_handle which is a GIOChannel,
   // but actually is a GIOSSLChannel (see network-openssl.c).
-  GIOSSLChannel *ssl_channel = 
+  const GIOSSLChannel * const ssl_channel =
     (GIOSSLChannel*) server->handle->handle;
   if (!ssl_channel->ssl) {
     sslinfo_print_to_client("ssl struct not found");
     return;
   }
 
-  // get the ssl cipher name.
-  const SSL_CIPHER* ssl_cipher = SSL_get_current_cipher(ssl_channel->ssl);
+  const SSL_CIPHER * const ssl_cipher = SSL_get_current_cipher(
+      ssl_channel->ssl);
   if (!ssl_cipher) {
     sslinfo_print_to_client("failed to find ssl cipher");
     return;
   }
 
-  // NOTE: there is also SSL_CIPHER_description() which gives additional
+  const int cipher_bits = SSL_CIPHER_get_bits(ssl_cipher, NULL);
+  const char * const protocol_version = SSL_CIPHER_get_version(ssl_cipher);
+
+  // Get key exchange, cipher, and MAC.
+  // NOTE: There is also SSL_CIPHER_description() which gives additional
   //   details, but does not look as nice, and the details do not seem
-  //   to give much more that is useful.
-  //   example:
-  //   cipher name: DHE-RSA-AES256-GCM-SHA384
-  //   cipher description: DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA      Enc=AESGCM(256) Mac=AEAD
-  // for more information, refer to
-  // http://www.openssl.org/docs/ssl/ssl.html
-  const char* const cipher_name = SSL_CIPHER_get_name(ssl_cipher);
-  int cipher_bits = SSL_CIPHER_get_bits(ssl_cipher, NULL);
-  char* protocol_version = SSL_CIPHER_get_version(ssl_cipher);
+  //   to give much more that is useful. It writes a buffer that looks like
+  //   this:
+  //   DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA      Enc=AESGCM(256) Mac=AEAD
+  //   Whereas SSL_CIPHER_get_name() returns a string that looks like this:
+  //   DHE-RSA-AES256-GCM-SHA384
+  // For more information, refer to http://www.openssl.org/docs/ssl/ssl.html
+  const char * const cipher_name = SSL_CIPHER_get_name(ssl_cipher);
+
   printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Connected to server [%s] using"
     " cipher [%s] (%d bits) (SSL/TLS protocol version %s).",
     server->tag, cipher_name, cipher_bits, protocol_version);
@@ -152,6 +154,6 @@ sslinfo_deinit(void) {
  */
 void
 sslinfo_abicheck(int * version) {
-	*version = IRSSI_ABI_VERSION;
+  *version = IRSSI_ABI_VERSION;
 }
 #endif
