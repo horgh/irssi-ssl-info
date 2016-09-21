@@ -1,15 +1,11 @@
 IRSSI_DIR=/usr/include/irssi
-GLIB2_DIR=/usr/include/glib-2.0
-GLIB2_DIR_2=/usr/lib/i386-linux-gnu/glib-2.0
 LIB_DIR=/usr/lib
 
 IRSSI_INCLUDES= \
 	-I$(IRSSI_DIR) -I$(IRSSI_DIR)/src -I$(IRSSI_DIR)/src/core \
 	-I$(IRSSI_DIR)/src/fe-common/core -I$(IRSSI_DIR)/src/irc/core \
 
-GLIB2_INCLUDES= \
-	-I$(GLIB2_DIR) -I$(GLIB2_DIR)/glib \
-	-I$(GLIB2_DIR_2) -I$(GLIB2_DIR_2)/include \
+GLIB2_INCLUDES=`pkg-config --cflags glib-2.0`
 
 CC=gcc
 
