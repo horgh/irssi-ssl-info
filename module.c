@@ -88,7 +88,11 @@ sslinfo_server_connected(const SERVER_REC * const server) {
   }
 
   const int cipher_bits = SSL_CIPHER_get_bits(ssl_cipher, NULL);
-  const char * const protocol_version = SSL_CIPHER_get_version(ssl_cipher);
+
+  // Get SSL/TLS version. We use this instead of SSL_CIPHER_get_version() as
+  // SSL_CIPHER_* indicates the protocol version to which the cipher belongs
+  // (where it was defined in the spec) rather than the current TLS version.
+  const char * const protocol_version = SSL_get_version(ssl_channel->ssl);
 
   // Get key exchange, cipher, and MAC.
   // NOTE: There is also SSL_CIPHER_description() which gives additional
@@ -102,7 +106,7 @@ sslinfo_server_connected(const SERVER_REC * const server) {
   const char * const cipher_name = SSL_CIPHER_get_name(ssl_cipher);
 
   printtext(NULL, NULL, MSGLEVEL_CLIENTERROR, "Connected to server [%s] using"
-    " cipher [%s] (%d bits) (SSL/TLS protocol version %s).",
+    " [%s] (%d cipher bits) (SSL/TLS protocol version %s)",
     server->tag, cipher_name, cipher_bits, protocol_version);
 }
 
